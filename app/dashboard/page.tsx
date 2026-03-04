@@ -9,7 +9,7 @@ export default async function Dashboard() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  //   if (!user) redirect("/login");
+  if (!user) redirect("/login");
 
   const { data: goals } = await supabase
     .from("goals")
