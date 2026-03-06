@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase-server";
-import { redirect } from "next/navigation";
 import CreateGoal from "@/components/CreateGoal";
+import DeleteGoal from "@/components/DeleteGoal";
 
 export default async function Dashboard() {
   const supabase = await createClient();
@@ -9,9 +9,8 @@ export default async function Dashboard() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // 🔥 TEMP DEV USER (replace with real UUID from Supabase)
+  // TEMP DEV USER
   const devUserId = "d3a726ed-16ea-450c-9be1-b954fb57d49f";
-
   const activeUserId = user?.id ?? devUserId;
 
   const { data: goals, error } = await supabase
@@ -27,20 +26,26 @@ export default async function Dashboard() {
   return (
     <div className="min-h-screen bg-neutral-50 px-12 py-10">
       <div className="max-w-5xl mx-auto space-y-10">
+        {/* Header */}
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-semibold text-neutral-800">
             Your Goals
           </h1>
         </div>
 
+        {/* Create Goal */}
         <CreateGoal userId={activeUserId} />
 
+        {/* Goals Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {goals?.map((goal) => (
             <div
               key={goal.id}
-              className="bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition"
+              className="relative bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition"
             >
+              {/* Delete Button */}
+              <DeleteGoal goalId={goal.id} />
+
               <h2 className="text-lg font-semibold text-neutral-800 mb-2">
                 {goal.title}
               </h2>
