@@ -4,7 +4,13 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabase-client";
 import { useRouter } from "next/navigation";
 
-export default function CreateGoal({ userId }: { userId: string }) {
+export default function CreateGoal({
+  userId,
+  onClose,
+}: {
+  userId: string;
+  onClose?: () => void;
+}) {
   const [title, setTitle] = useState("");
   const [why, setWhy] = useState("");
   const [loading, setLoading] = useState(false);
@@ -31,12 +37,22 @@ export default function CreateGoal({ userId }: { userId: string }) {
     setTitle("");
     setWhy("");
 
-    // 🔥 Re-fetch server data
     router.refresh();
+
+    // close modal after success
+    onClose?.();
   };
 
   return (
-    <div className="bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm max-w-xl">
+    <div className="relative bg-white border border-neutral-200 rounded-2xl p-6 shadow-xl max-w-xl w-[420px]">
+      {/* Close button */}
+      <button
+        onClick={onClose}
+        className="absolute top-3 right-3 text-neutral-400 hover:text-black text-lg"
+      >
+        ×
+      </button>
+
       <h2 className="text-lg font-semibold text-neutral-800 mb-4">
         Create New Goal
       </h2>
@@ -50,7 +66,7 @@ export default function CreateGoal({ userId }: { userId: string }) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Run a 5K under 26 minutes"
-            className="w-full rounded-lg border border-neutral-200 px-4 py-2 text-sm text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-emerald-600/40 transition"
+            className="w-full rounded-lg border border-neutral-200 px-4 py-2 text-sm text-black focus:outline-none focus:ring-2 focus:ring-emerald-600/40"
           />
         </div>
 
@@ -61,9 +77,9 @@ export default function CreateGoal({ userId }: { userId: string }) {
           <textarea
             value={why}
             onChange={(e) => setWhy(e.target.value)}
-            placeholder="Improve endurance and discipline"
             rows={3}
-            className="w-full rounded-lg border border-neutral-200 px-4 py-2 text-sm text-black placeholder:text-neutral-400 resize-none focus:outline-none focus:ring-2 focus:ring-emerald-600/40 transition"
+            placeholder="Improve endurance and discipline"
+            className="w-full rounded-lg border border-neutral-200 px-4 py-2 text-sm text-black resize-none focus:outline-none focus:ring-2 focus:ring-emerald-600/40"
           />
         </div>
 

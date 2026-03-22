@@ -1,4 +1,35 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase-client";
+import CreateGoal from "@/components/CreateGoal";
+
 export default function ProjectBoard() {
+  const [showModal, setShowModal] = useState(false);
+  const router = useRouter();
+
+  // Close modal on ESC
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShowModal(false);
+    };
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, []);
+
+  // 🔥 LOGOUT FUNCTION
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      alert("Error logging out");
+      return;
+    }
+
+    router.push("/login");
+  };
+
   return (
     <>
       <style>{`
@@ -20,8 +51,6 @@ export default function ProjectBoard() {
           display: flex;
           min-height: 100vh;
         }
-
-        /* Sidebar */
 
         .sidebar {
           width: 220px;
@@ -55,8 +84,6 @@ export default function ProjectBoard() {
           background: rgba(255,255,255,0.22);
         }
 
-        /* Main */
-
         .main {
           flex: 1;
           padding: 48px 56px;
@@ -84,13 +111,13 @@ export default function ProjectBoard() {
           color: white;
           font-size: 14px;
           cursor: pointer;
+          transition: all 0.2s ease;
         }
 
         .create-btn:hover {
           background: var(--ink);
+          transform: translateY(-1px);
         }
-
-        /* grid layout */
 
         .grid {
           display: grid;
@@ -114,11 +141,44 @@ export default function ProjectBoard() {
           padding-left: 18px;
           color: var(--sage-light);
         }
+
+        /* ✨ MODAL */
+
+        .modal-backdrop {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.35);
+          backdrop-filter: blur(8px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+          animation: fadeIn 0.2s ease;
+        }
+
+        .modal-content {
+          animation: scaleIn 0.25s ease;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0 }
+          to { opacity: 1 }
+        }
+
+        @keyframes scaleIn {
+          from {
+            opacity: 0;
+            transform: scale(0.96);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
       `}</style>
 
       <div className="layout">
         {/* Sidebar */}
-
         <div className="sidebar">
           <div>
             <div className="brand">OHARA</div>
@@ -135,12 +195,12 @@ export default function ProjectBoard() {
           <div className="nav">
             <button>Account</button>
             <button>Settings</button>
-            <button>Log Out</button>
+            {/* ✅ LOGOUT BUTTON */}
+            <button onClick={handleLogout}>Log Out</button>
           </div>
         </div>
 
         {/* Main */}
-
         <div className="main">
           <div className="card overview">
             <h2>Project Overview</h2>
@@ -150,7 +210,9 @@ export default function ProjectBoard() {
             </ul>
           </div>
 
-          <button className="create-btn">Create New Goal +</button>
+          <button className="create-btn" onClick={() => setShowModal(true)}>
+            Create New Goal +
+          </button>
 
           <div className="grid">
             <div className="card">
@@ -176,13 +238,25 @@ export default function ProjectBoard() {
                 <ul>
                   <li>Track new progress</li>
                   <li>Identify over/under achievements</li>
-                  <li>Sense of well-being with goal</li>
+                  <li>Sense of well-being</li>
                 </ul>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* ✨ MODAL */}
+      {showModal && (
+        <div className="modal-backdrop" onClick={() => setShowModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <CreateGoal
+              userId={"YOUR_USER_ID"}
+              onClose={() => setShowModal(false)}
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 }
