@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   //  cookies() is async in your Next.js version
   const cookieStore = await cookies();
 
-  const response = NextResponse.redirect(new URL("/dashboard", request.url));
+  const response = NextResponse.redirect(new URL("/login", request.url));
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
