@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase-client";
 
 export default function FeedPage() {
   const [goals, setGoals] = useState<any[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
     fetchGoals();
@@ -43,19 +45,50 @@ export default function FeedPage() {
         }
 
         .header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
           margin-bottom: 36px;
+        }
+
+        .left {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .top-row {
+          display: flex;
+          align-items: center;
+          gap: 14px;
         }
 
         .title {
           font-family: 'Fraunces', serif;
           font-size: 28px;
           color: var(--ink);
-          margin-bottom: 6px;
         }
 
         .subtitle {
           color: var(--sage-light);
           font-size: 14px;
+        }
+
+        .back-button {
+          font-size: 13px;
+          color: var(--sage-light);
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          padding: 6px 10px;
+          border-radius: 8px;
+          transition: all 0.2s ease;
+        }
+
+        .back-button:hover {
+          color: var(--ink);
+          background: var(--sage-pale);
+          transform: translateX(-2px);
         }
 
         .feed {
@@ -120,8 +153,20 @@ export default function FeedPage() {
 
       <div className="container">
         <div className="header">
-          <div className="title">Community Feed</div>
-          <div className="subtitle">See what others are working toward</div>
+          <div className="left">
+            <div className="top-row">
+              <button
+                onClick={() => router.push("/profile")}
+                className="back-button"
+              >
+                ← Profile
+              </button>
+
+              <div className="title">Community Feed</div>
+            </div>
+
+            <div className="subtitle">See what others are working toward</div>
+          </div>
         </div>
 
         <div className="feed">

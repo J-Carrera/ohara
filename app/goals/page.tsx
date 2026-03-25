@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase-client";
 import CreateGoal from "@/components/CreateGoal";
 import DeleteGoal from "@/components/DeleteGoal";
@@ -9,6 +10,8 @@ export default function ProjectsPage() {
   const [goals, setGoals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+
+  const router = useRouter();
 
   useEffect(() => {
     fetchGoals();
@@ -66,10 +69,33 @@ export default function ProjectsPage() {
           margin-bottom: 36px;
         }
 
+        .left {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+        }
+
         .title {
           font-family: 'Fraunces', serif;
           font-size: 28px;
           color: var(--ink);
+        }
+
+        .back-button {
+          font-size: 13px;
+          color: var(--sage-light);
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          padding: 6px 10px;
+          border-radius: 8px;
+          transition: all 0.2s ease;
+        }
+
+        .back-button:hover {
+          color: var(--ink);
+          background: var(--sage-pale);
+          transform: translateX(-2px);
         }
 
         .button {
@@ -139,7 +165,16 @@ export default function ProjectsPage() {
 
       <div className="container">
         <div className="header">
-          <div className="title">Your Projects</div>
+          <div className="left">
+            <button
+              onClick={() => router.push("/profile")}
+              className="back-button"
+            >
+              ← Profile
+            </button>
+
+            <div className="title">Your Projects</div>
+          </div>
 
           <button onClick={() => setShowModal(true)} className="button">
             + New Goal

@@ -7,14 +7,39 @@ import CreateGoal from "@/components/CreateGoal";
 
 export default function ProjectBoard() {
   const [showModal, setShowModal] = useState(false);
-
-  //  NEW STATE
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [countdown, setCountdown] = useState(30);
 
+  const [goals, setGoals] = useState<any[]>([]);
+  const [loadingGoals, setLoadingGoals] = useState(true);
+
   const router = useRouter();
 
-  // Close modal on ESC
+  const fetchGoals = async () => {
+    setLoadingGoals(true);
+
+    const { data: userData } = await supabase.auth.getUser();
+
+    if (!userData.user) {
+      setLoadingGoals(false);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("goals")
+      .select("*")
+      .eq("user_id", userData.user.id)
+      .order("created_at", { ascending: false });
+
+    if (!error && data) setGoals(data);
+
+    setLoadingGoals(false);
+  };
+
+  useEffect(() => {
+    fetchGoals();
+  }, []);
+
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape") setShowModal(false);
@@ -23,7 +48,6 @@ export default function ProjectBoard() {
     return () => window.removeEventListener("keydown", handleEsc);
   }, []);
 
-  // COUNTDOWN EFFECT
   useEffect(() => {
     if (!showLogoutConfirm) return;
 
@@ -39,19 +63,11 @@ export default function ProjectBoard() {
     return () => clearTimeout(timer);
   }, [countdown, showLogoutConfirm]);
 
-  // LOGOUT FUNCTION
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
-
-    if (error) {
-      alert("Error logging out");
-      return;
-    }
-
+    if (error) return alert("Error logging out");
     router.push("/login");
   };
-
-  //  NEW HANDLER
 
   const handleLogoutClick = () => {
     setShowLogoutConfirm(true);
@@ -68,7 +84,6 @@ export default function ProjectBoard() {
           --cream: #FAF8F4;
           --ink: #1C2420;
           --gold: #C8A96E;
-
         }
 
         body {
@@ -107,66 +122,85 @@ export default function ProjectBoard() {
           color: white;
           cursor: pointer;
           font-size: 14px;
+          transition: 0.2s;
         }
 
         .nav button:hover {
-          background: rgba(255,255,255,0.22);
+          background: rgba(255,255,255,0.25);
         }
 
         .main {
           flex: 1;
-          padding: 48px 56px;
+          padding: 48px;
         }
 
-        .card {
-          background: white;
-          color: black;
-          border-radius: 18px;
-          padding: 28px;
-          box-shadow:
-            0 1px 2px rgba(28,36,32,0.04),
-            0 8px 28px rgba(28,36,32,0.08);
-          
+        h2 {
+          font-family: 'Fraunces', serif;
+          margin-bottom: 16px;
         }
 
-        .overview {
-          margin-bottom: 28px;
-        
-        }
-
-        .create-btn {
-          margin: 18px 0 36px;
-          padding: 12px 20px;
-          border-radius: 10px;
-          border: 1px solid var(--sage);
-          background: var(--sage);
-          color: white;
-          font-size: 14px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-
-        .create-btn:hover {
-          background: var(--ink);
-          transform: translateY(-1px);
-        }
-
-        .grid {
+        /* MAIN GRID LAYOUT */
+        .dashboard-grid {
           display: grid;
-          grid-template-columns: 1.4fr 1fr;
-          gap: 26px;
+          grid-template-columns: 2fr 1fr;
+          gap: 28px;
         }
 
         .right-stack {
           display: flex;
           flex-direction: column;
-          gap: 26px;
+          gap: 28px;
         }
 
-        h2 {
-          font-family: 'Fraunces', serif;
+        .card {
+        color: black;
+          background: white;
+          border-radius: 18px;
+          padding: 24px;
+          box-shadow:
+            0 2px 6px rgba(0,0,0,0.05),
+            0 10px 24px rgba(0,0,0,0.08);
+        }
+
+        /* GOALS GRID */
+        .goals-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+          gap: 18px;
+        }
+
+        .goal-card {
+          background: var(--sage-pale);
+          border-radius: 14px;
+          padding: 16px;
+          min-height: 150px;
+
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+
+          transition: 0.2s;
+        }
+
+        .goal-card:hover {
+          transform: translateY(-3px);
+          background: white;
+        }
+
+        .goal-title {
           font-weight: 600;
-          margin-bottom: 10px;
+          font-size: 15px;
+          margin-bottom: 6px;
+        }
+
+        .goal-desc {
+          font-size: 13px;
+          color: var(--sage-light);
+        }
+
+        .goal-footer {
+          font-size: 12px;
+          color: var(--sage-light);
         }
 
         ul {
@@ -174,51 +208,30 @@ export default function ProjectBoard() {
           color: var(--sage-light);
         }
 
-        /* MODAL */
+        .empty {
+          color: var(--sage-light);
+        }
 
         .modal-backdrop {
           position: fixed;
           inset: 0;
           background: rgba(0,0,0,0.35);
-          color: black;
           backdrop-filter: blur(8px);
           display: flex;
           align-items: center;
           justify-content: center;
-          z-index: 1000;
-          animation: fadeIn 0.2s ease;
-        }
-
-        .modal-content {
-          animation: scaleIn 0.25s ease;
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0 }
-          to { opacity: 1 }
-        }
-
-        @keyframes scaleIn {
-          from {
-            opacity: 0;
-            transform: scale(0.96);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
         }
       `}</style>
 
       <div className="layout">
-        {/* Sidebar */}
+        {/* SIDEBAR */}
         <div className="sidebar">
           <div>
             <div className="brand">OHARA</div>
 
             <div className="nav">
               <button onClick={() => router.push("/goals")}>My Goals</button>
-              <button onClick={() => router.push("/feed")}>Feed</button>{" "}
+              <button onClick={() => router.push("/feed")}>Feed</button>
               <button>Report</button>
               <button>Peers</button>
               <button>Legacy</button>
@@ -228,50 +241,58 @@ export default function ProjectBoard() {
           <div className="nav">
             <button>Account</button>
             <button>Settings</button>
-            {/*  ONLY CHANGE HERE */}
             <button onClick={handleLogoutClick}>Log Out</button>
           </div>
         </div>
 
-        {/* Main */}
+        {/* MAIN */}
         <div className="main">
-          <div className="card overview">
-            <h2>Project Overview</h2>
-            <ul>
-              <li>List of current goals</li>
-              <li>General goal description</li>
-            </ul>
-          </div>
-
-          <button className="create-btn" onClick={() => setShowModal(true)}>
-            Create New Goal +
-          </button>
-
-          <div className="grid">
+          <div className="dashboard-grid">
+            {/* LEFT: GOALS */}
             <div className="card">
-              <h2>Goals & Objectives</h2>
-              <ul>
-                <li>Statistical goal description</li>
-                <li>Reasoning / meaning for each</li>
-              </ul>
+              <h2>Current Goals</h2>
+
+              {loadingGoals && <div className="empty">Loading...</div>}
+
+              {!loadingGoals && goals.length === 0 && (
+                <div className="empty">No goals yet.</div>
+              )}
+
+              {!loadingGoals && goals.length > 0 && (
+                <div className="goals-grid">
+                  {goals.map((goal) => (
+                    <div key={goal.id} className="goal-card">
+                      <div>
+                        <div className="goal-title">{goal.title}</div>
+                        {goal.description && (
+                          <div className="goal-desc">{goal.description}</div>
+                        )}
+                      </div>
+
+                      <div className="goal-footer">Active</div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
+            {/* RIGHT SIDE */}
             <div className="right-stack">
               <div className="card">
                 <h2>Productivity Tracker</h2>
                 <ul>
-                  <li>Goals created</li>
-                  <li>Goals completed</li>
-                  <li>Avg goal duration</li>
+                  <li>Goals created: {goals.length}</li>
+                  <li>Goals completed: 0</li>
+                  <li>Avg goal duration: —</li>
                 </ul>
               </div>
 
               <div className="card">
                 <h2>Daily Check In</h2>
                 <ul>
-                  <li>Track new progress</li>
-                  <li>Identify over/under achievements</li>
-                  <li>Sense of well-being</li>
+                  <li>Track progress</li>
+                  <li>Identify patterns</li>
+                  <li>Stay consistent</li>
                 </ul>
               </div>
             </div>
@@ -279,16 +300,7 @@ export default function ProjectBoard() {
         </div>
       </div>
 
-      {/* ORIGINAL MODAL */}
-      {showModal && (
-        <div className="modal-backdrop" onClick={() => setShowModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <CreateGoal onClose={() => setShowModal(false)} />
-          </div>
-        </div>
-      )}
-
-      {/*  NEW LOGOUT CONFIRM MODAL */}
+      {/* LOGOUT MODAL */}
       {showLogoutConfirm && (
         <div className="modal-backdrop">
           <div
@@ -298,41 +310,20 @@ export default function ProjectBoard() {
               borderRadius: "16px",
               width: "320px",
               textAlign: "center",
-              boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
             }}
           >
-            <h3 style={{ marginBottom: "10px" }}>Confirm Logout</h3>
-            <p style={{ color: "#6B7F72" }}>
-              You will be logged out in {countdown}s
-            </p>
+            <h3>Confirm Logout</h3>
+            <p>You will be logged out in {countdown}s</p>
 
             <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
               <button
                 onClick={() => setShowLogoutConfirm(false)}
-                style={{
-                  flex: 1,
-                  padding: "10px",
-                  borderRadius: "8px",
-                  border: "none",
-                  background: "#ddd",
-                  cursor: "pointer",
-                }}
+                style={{ flex: 1 }}
               >
                 Cancel
               </button>
 
-              <button
-                onClick={handleLogout}
-                style={{
-                  flex: 1,
-                  padding: "10px",
-                  borderRadius: "8px",
-                  border: "none",
-                  background: "#4A5E52",
-                  color: "white",
-                  cursor: "pointer",
-                }}
-              >
+              <button onClick={handleLogout} style={{ flex: 1 }}>
                 Log Out Now
               </button>
             </div>
