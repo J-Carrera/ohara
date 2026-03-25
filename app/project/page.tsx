@@ -7,6 +7,11 @@ import CreateGoal from "@/components/CreateGoal";
 
 export default function ProjectBoard() {
   const [showModal, setShowModal] = useState(false);
+
+  //  NEW STATE
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [countdown, setCountdown] = useState(30);
+
   const router = useRouter();
 
   // Close modal on ESC
@@ -18,7 +23,23 @@ export default function ProjectBoard() {
     return () => window.removeEventListener("keydown", handleEsc);
   }, []);
 
-  // 🔥 LOGOUT FUNCTION
+  // COUNTDOWN EFFECT
+  useEffect(() => {
+    if (!showLogoutConfirm) return;
+
+    if (countdown === 0) {
+      handleLogout();
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setCountdown((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [countdown, showLogoutConfirm]);
+
+  // LOGOUT FUNCTION
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
 
@@ -28,6 +49,13 @@ export default function ProjectBoard() {
     }
 
     router.push("/login");
+  };
+
+  //  NEW HANDLER
+
+  const handleLogoutClick = () => {
+    setShowLogoutConfirm(true);
+    setCountdown(30);
   };
 
   return (
@@ -40,6 +68,7 @@ export default function ProjectBoard() {
           --cream: #FAF8F4;
           --ink: #1C2420;
           --gold: #C8A96E;
+
         }
 
         body {
@@ -91,15 +120,18 @@ export default function ProjectBoard() {
 
         .card {
           background: white;
+          color: black;
           border-radius: 18px;
           padding: 28px;
           box-shadow:
             0 1px 2px rgba(28,36,32,0.04),
             0 8px 28px rgba(28,36,32,0.08);
+          
         }
 
         .overview {
           margin-bottom: 28px;
+        
         }
 
         .create-btn {
@@ -142,12 +174,13 @@ export default function ProjectBoard() {
           color: var(--sage-light);
         }
 
-        /* ✨ MODAL */
+        /* MODAL */
 
         .modal-backdrop {
           position: fixed;
           inset: 0;
           background: rgba(0,0,0,0.35);
+          color: black;
           backdrop-filter: blur(8px);
           display: flex;
           align-items: center;
@@ -184,9 +217,9 @@ export default function ProjectBoard() {
             <div className="brand">OHARA</div>
 
             <div className="nav">
-              <button>Projects</button>
+              <button onClick={() => router.push("/goals")}>My Goals</button>
+              <button onClick={() => router.push("/feed")}>Feed</button>{" "}
               <button>Report</button>
-              <button>Feed</button>
               <button>Peers</button>
               <button>Legacy</button>
             </div>
@@ -195,8 +228,8 @@ export default function ProjectBoard() {
           <div className="nav">
             <button>Account</button>
             <button>Settings</button>
-            {/* ✅ LOGOUT BUTTON */}
-            <button onClick={handleLogout}>Log Out</button>
+            {/*  ONLY CHANGE HERE */}
+            <button onClick={handleLogoutClick}>Log Out</button>
           </div>
         </div>
 
@@ -246,14 +279,63 @@ export default function ProjectBoard() {
         </div>
       </div>
 
-      {/* ✨ MODAL */}
+      {/* ORIGINAL MODAL */}
       {showModal && (
         <div className="modal-backdrop" onClick={() => setShowModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <CreateGoal
-              userId={"YOUR_USER_ID"}
-              onClose={() => setShowModal(false)}
-            />
+            <CreateGoal onClose={() => setShowModal(false)} />
+          </div>
+        </div>
+      )}
+
+      {/*  NEW LOGOUT CONFIRM MODAL */}
+      {showLogoutConfirm && (
+        <div className="modal-backdrop">
+          <div
+            style={{
+              background: "white",
+              padding: "28px",
+              borderRadius: "16px",
+              width: "320px",
+              textAlign: "center",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
+            }}
+          >
+            <h3 style={{ marginBottom: "10px" }}>Confirm Logout</h3>
+            <p style={{ color: "#6B7F72" }}>
+              You will be logged out in {countdown}s
+            </p>
+
+            <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+              <button
+                onClick={() => setShowLogoutConfirm(false)}
+                style={{
+                  flex: 1,
+                  padding: "10px",
+                  borderRadius: "8px",
+                  border: "none",
+                  background: "#ddd",
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleLogout}
+                style={{
+                  flex: 1,
+                  padding: "10px",
+                  borderRadius: "8px",
+                  border: "none",
+                  background: "#4A5E52",
+                  color: "white",
+                  cursor: "pointer",
+                }}
+              >
+                Log Out Now
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -9,14 +9,22 @@ export default async function Dashboard() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // TEMP DEV USER
-  const devUserId = "d3a726ed-16ea-450c-9be1-b954fb57d49f";
-  const activeUserId = user?.id ?? devUserId;
+  // DEBUG (check your terminal)
+  console.log("SERVER USER:", user);
+
+  //  HARD STOP if not authenticated (no more dev fallback)
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-neutral-500">Not logged in</p>
+      </div>
+    );
+  }
 
   const { data: goals, error } = await supabase
     .from("goals")
     .select("*")
-    .eq("user_id", activeUserId)
+    .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -31,10 +39,13 @@ export default async function Dashboard() {
           <h1 className="text-3xl font-semibold text-neutral-800">
             Your Goals
           </h1>
+          <p className="text-sm text-neutral-500 mt-1">
+            Logged in as {user.email}
+          </p>
         </div>
 
         {/* Create Goal */}
-        <CreateGoal userId={activeUserId} />
+        <CreateGoal />
 
         {/* Goals Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
