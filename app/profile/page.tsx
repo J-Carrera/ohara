@@ -299,15 +299,88 @@ export default function ProjectBoard() {
           color: var(--sage-light);
         }
 
-        .modal-backdrop {
-          position: fixed;
-          inset: 0;
-          background: rgba(0,0,0,0.35);
-          backdrop-filter: blur(8px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
+        .modal {
+  border: 1px solid rgba(0,0,0,0.05);
+  width: 100%;
+  max-width: 360px;
+  background: white;
+  border-radius: 16px;
+  padding: 24px 22px;
+  box-shadow:
+    0 8px 24px rgba(0,0,0,0.12),
+    0 2px 8px rgba(0,0,0,0.06);
+  text-align: center;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.modal p {
+  margin: 0 0 18px;
+  font-size: 14px;
+  color: var(--sage-light);
+}
+
+/* countdown highlight */
+.countdown {
+  font-weight: 600;
+  color: var(--gold);
+}
+
+/* buttons layout */
+.modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* base button */
+.modal-actions button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* cancel button */
+.modal-actions button:first-child {
+  background: transparent;
+  border: 1px solid #E5E3DE;
+  color: var(--sage-light);
+}
+
+.modal-actions button:first-child:hover {
+  background: #F5F3EF;
+}
+
+/* logout button */
+.modal-actions button:last-child {
+  background: var(--sage);
+  color: white;
+  border: none;
+}
+
+.modal-actions button:last-child:hover {
+  background: var(--sage-light);
+}
+
+/* subtle animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
       `}</style>
 
       <div className="layout">
@@ -412,15 +485,18 @@ export default function ProjectBoard() {
       {showLogoutConfirm && (
         <div className="modal-backdrop">
           <div className="modal">
-            <h3>Confirm Logout</h3>
-            <p>You will be logged out in {countdown}s</p>
+            <h3>Log out?</h3>
+            <p>
+              You’ll be signed out in{" "}
+              <span className="countdown">{countdown}s</span>
+            </p>
 
             <div className="modal-actions">
               <button onClick={() => setShowLogoutConfirm(false)}>
-                Cancel
+                Stay Logged In
               </button>
 
-              <button onClick={handleLogout}>Log Out Now</button>
+              <button onClick={handleLogout}>Log Out</button>
             </div>
           </div>
         </div>

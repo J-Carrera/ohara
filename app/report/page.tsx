@@ -29,6 +29,45 @@ export default function ReportsPage() {
     fetchReports();
   }, []);
 
+  // 🔥 FORMATTER FUNCTION
+  const formatReport = (text: string) => {
+    if (!text) return null;
+
+    const sections = text.split(/\n\s*\n/);
+
+    return sections.map((section: string, i: number) => {
+      const lines = section.split("\n");
+
+      const title = lines[0]?.replace(":", "");
+      const content = lines.slice(1);
+
+      return (
+        <div key={i} className="report-section">
+          <div className="report-title">{title}</div>
+
+          <div className="report-content">
+            {content.map((line: string, idx: number) => {
+              if (line.trim().startsWith("-")) {
+                return (
+                  <div key={idx} className="report-bullet">
+                    <span className="bullet-dot" />
+                    <span>{line.replace("-", "").trim()}</span>
+                  </div>
+                );
+              }
+
+              return (
+                <p key={idx} className="report-text">
+                  {line}
+                </p>
+              );
+            })}
+          </div>
+        </div>
+      );
+    });
+  };
+
   return (
     <>
       <style>{`
@@ -46,150 +85,101 @@ export default function ReportsPage() {
           font-family: 'Geist', sans-serif;
         }
 
-        .layout {
-          display: flex;
-          min-height: 100vh;
-        }
-
-        .sidebar {
-          width: 220px;
-          background: var(--sage);
-          color: white;
-          padding: 28px 20px;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-        }
-
-        .brand {
-          font-family: 'Fraunces', serif;
-          font-size: 18px;
-          margin-bottom: 32px;
-        }
-
-        .nav button {
-          width: 100%;
-          margin-bottom: 12px;
-          padding: 10px;
-          border: none;
-          border-radius: 8px;
-          background: rgba(255,255,255,0.12);
-          color: white;
-          cursor: pointer;
-          font-size: 14px;
-          transition: 0.2s;
-        }
-
-        .nav button:hover {
-          background: rgba(255,255,255,0.25);
-        }
-
-        .main {
-          flex: 1;
-          padding: 48px;
-        }
-
         h2 {
           font-family: 'Fraunces', serif;
-          margin-bottom: 16px;
-        }
-
-        .card {
-          color: black;
-          background: white;
-          border-radius: 18px;
-          padding: 24px;
-          box-shadow:
-            0 2px 6px rgba(0,0,0,0.05),
-            0 10px 24px rgba(0,0,0,0.08);
+          margin-bottom: 20px;
         }
 
         .goals-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-          gap: 18px;
+          grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+          gap: 20px;
         }
 
         .goal-card {
-          background: var(--sage-pale);
-          border-radius: 16px;
-          padding: 18px;
-          min-height: 170px;
+          background: white;
+          border-radius: 18px;
+          padding: 20px;
+          min-height: 220px;
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          transition: all 0.2s ease;
-          border: 1px solid transparent;
+          transition: all 0.25s ease;
+          border: 1px solid #ECEAE4;
+          box-shadow:
+            0 2px 6px rgba(0,0,0,0.05),
+            0 10px 24px rgba(0,0,0,0.06);
         }
 
         .goal-card:hover {
-          transform: translateY(-4px);
-          background: white;
+          transform: translateY(-6px);
           border-color: var(--gold);
+          box-shadow:
+            0 4px 10px rgba(0,0,0,0.08),
+            0 14px 30px rgba(0,0,0,0.10);
         }
 
         .goal-title {
           font-weight: 600;
-          font-size: 15px;
-          margin-bottom: 6px;
+          font-size: 16px;
+          margin-bottom: 10px;
+          color: var(--ink);
         }
 
         .goal-desc {
+          max-height: 240px;
+          overflow-y: auto;
+          padding-right: 6px;
+        }
+
+        /* REPORT STYLING */
+
+        .report-section {
+          margin-top: 14px;
+          padding-top: 10px;
+          border-top: 1px solid #F0EFEA;
+        }
+
+        .report-title {
+          font-weight: 600;
           font-size: 13px;
-          color: var(--sage-light);
+          color: var(--sage);
+          margin-bottom: 8px;
+          letter-spacing: 0.3px;
+          text-transform: uppercase;
         }
 
-        .goal-desc-spaced {
-          margin-bottom: 12px;
+        .goal-card:hover .report-title {
+          color: var(--gold);
         }
 
-        .goal-progress {
-          margin-bottom: 10px;
-        }
-
-        .progress-header {
+        .report-content {
           display: flex;
-          justify-content: space-between;
-          font-size: 11px;
-          color: var(--sage-light);
-          margin-bottom: 5px;
+          flex-direction: column;
+          gap: 6px;
         }
 
-        .progress-bar {
-          background: #DAD7D0;
-          border-radius: 999px;
+        .report-text {
+          font-size: 13px;
+          color: var(--ink);
+          line-height: 1.5;
+        }
+
+        .report-bullet {
+          display: flex;
+          gap: 8px;
+          align-items: flex-start;
+          font-size: 13px;
+          color: var(--ink);
+        }
+
+        .bullet-dot {
+          width: 6px;
           height: 6px;
-          overflow: hidden;
-        }
-
-        .progress-fill {
-          height: 100%;
-          background: var(--sage);
-          border-radius: 999px;
-        }
-
-        .goal-footer-row {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding-top: 8px;
-          border-top: 1px solid #E5E3DE;
-        }
-
-        .deadline {
-          color: var(--sage-light);
-        }
-
-        .status-pill {
-          font-size: 11px;
-          padding: 2px 8px;
-          border-radius: 999px;
-          font-weight: 500;
-        }
-
-        .status-pill.complete {
-          background: #D4EDDA;
-          color: #2E6B3E;
+          background: var(--gold);
+          border-radius: 50%;
+          margin-top: 6px;
+          flex-shrink: 0;
         }
 
         .empty {
@@ -197,12 +187,14 @@ export default function ReportsPage() {
         }
       `}</style>
 
-      <div style={{ padding: "40px" }}>
+      <div style={{ padding: "40px", color: "black" }}>
         <h2>Reports</h2>
 
         {loading && <div>Loading...</div>}
 
-        {!loading && reports.length === 0 && <div>No reports yet.</div>}
+        {!loading && reports.length === 0 && (
+          <div className="empty">No reports yet.</div>
+        )}
 
         <div className="goals-grid">
           {reports.map((goal) => (
@@ -210,7 +202,7 @@ export default function ReportsPage() {
               <div>
                 <div className="goal-title">{goal.title}</div>
 
-                <div className="goal-desc">{goal.ai_report}</div>
+                <div className="goal-desc">{formatReport(goal.ai_report)}</div>
               </div>
             </div>
           ))}

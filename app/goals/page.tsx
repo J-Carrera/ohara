@@ -193,7 +193,6 @@ export default function ProjectsPage() {
           {goals.map((goal) => (
             <div key={goal.id} className="card">
               <DeleteGoal goalId={goal.id} />
-              <CompleteGoal goalId={goal.id} />
 
               <div className="goal-title">{goal.title}</div>
 
