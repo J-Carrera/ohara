@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase-client";
 import CreateGoal from "@/components/CreateGoal";
 import DeleteGoal from "@/components/DeleteGoal";
+import CompleteGoal from "@/components/CompleteGoal";
 
 export default function ProjectsPage() {
   const [goals, setGoals] = useState<any[]>([]);
@@ -50,8 +51,9 @@ export default function ProjectsPage() {
           --cream: #FAF8F4;
           --ink: #1C2420;
         }
-
+      
         body {
+          color: black;
           background: var(--cream);
           font-family: 'Geist', sans-serif;
         }
@@ -144,7 +146,7 @@ export default function ProjectsPage() {
         }
 
         .goal-description {
-          color: var(--sage-light);
+          color: black;
           font-size: 14px;
           line-height: 1.5;
         }
@@ -191,6 +193,7 @@ export default function ProjectsPage() {
           {goals.map((goal) => (
             <div key={goal.id} className="card">
               <DeleteGoal goalId={goal.id} />
+              <CompleteGoal goalId={goal.id} />
 
               <div className="goal-title">{goal.title}</div>
 

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase-client";
-import CreateGoal from "@/components/CreateGoal";
+import CompleteGoal from "@/components/CompleteGoal";
 
 export default function ProjectBoard() {
   const [showModal, setShowModal] = useState(false);
@@ -73,6 +73,10 @@ export default function ProjectBoard() {
     setShowLogoutConfirm(true);
     setCountdown(30);
   };
+
+  // split goals
+  const activeGoals = goals.filter((g) => !g.completed);
+  const completedGoals = goals.filter((g) => g.completed);
 
   return (
     <>
@@ -170,22 +174,23 @@ export default function ProjectBoard() {
         }
 
         .goal-card {
-          background: var(--sage-pale);
-          border-radius: 14px;
-          padding: 16px;
-          min-height: 150px;
+    background: var(--sage-pale);
+    border-radius: 16px;
+    padding: 18px;
+   min-height: 170px;
 
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
+  display: flex;
+   flex-direction: column;
+  justify-content: space-between;
 
-          transition: 0.2s;
-        }
-
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
         .goal-card:hover {
-          transform: translateY(-3px);
-          background: white;
-        }
+  transform: translateY(-4px);
+  background: white;
+  border-color: rgba(0,0,0,0.05);
+}
 
         .goal-title {
           font-weight: 600;
@@ -202,6 +207,88 @@ export default function ProjectBoard() {
           font-size: 12px;
           color: var(--sage-light);
         }
+          /* --- NEW GOAL UI ENHANCEMENTS --- */
+
+/* spacing tweak */
+.goal-desc-spaced {
+  margin-bottom: 12px;
+}
+
+/* progress section */
+.goal-progress {
+  margin-bottom: 10px;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--sage-light);
+  margin-bottom: 5px;
+}
+
+.progress-bar {
+  background: #DAD7D0;
+  border-radius: 999px;
+  height: 6px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--sage);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+/* footer layout */
+.goal-footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 8px;
+  border-top: 1px solid #E5E3DE;
+}
+
+/* deadline states */
+.deadline {
+  color: var(--sage-light);
+}
+
+.deadline.today {
+  color: var(--gold);
+}
+
+.deadline.overdue {
+  color: #B04A4A;
+}
+
+.deadline.muted {
+  opacity: 0.6;
+}
+
+/* status pill */
+.status-pill {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 500;
+}
+
+.status-pill.complete {
+  background: #D4EDDA;
+  color: #2E6B3E;
+}
+
+.status-pill.in-progress {
+  background: var(--sage-pale);
+  color: var(--sage);
+}
+
+.status-pill.not-started {
+  background: #F0F0F0;
+  color: #888;
+}
 
         ul {
           padding-left: 18px;
@@ -232,9 +319,11 @@ export default function ProjectBoard() {
             <div className="nav">
               <button onClick={() => router.push("/goals")}>My Goals</button>
               <button onClick={() => router.push("/feed")}>Feed</button>
-              <button>Report</button>
+              <button onClick={() => router.push("/report")}>
+                Report
+              </button>{" "}
               <button>Peers</button>
-              <button>Legacy</button>
+              <button onClick={() => router.push("/legacy")}>Legacy</button>
             </div>
           </div>
 
@@ -254,24 +343,43 @@ export default function ProjectBoard() {
 
               {loadingGoals && <div className="empty">Loading...</div>}
 
-              {!loadingGoals && goals.length === 0 && (
+              {!loadingGoals && activeGoals.length === 0 && (
                 <div className="empty">No goals yet.</div>
               )}
 
-              {!loadingGoals && goals.length > 0 && (
+              {!loadingGoals && activeGoals.length > 0 && (
                 <div className="goals-grid">
-                  {goals.map((goal) => (
-                    <div key={goal.id} className="goal-card">
-                      <div>
-                        <div className="goal-title">{goal.title}</div>
-                        {goal.description && (
-                          <div className="goal-desc">{goal.description}</div>
-                        )}
-                      </div>
+                  {activeGoals.map((goal) => {
+                    const progress = goal.progress ?? 0;
 
-                      <div className="goal-footer">Active</div>
-                    </div>
-                  ))}
+                    return (
+                      <div key={goal.id} className="goal-card">
+                        <div>
+                          <div className="goal-title">{goal.title}</div>
+
+                          {goal.description && (
+                            <div className="goal-desc">{goal.description}</div>
+                          )}
+
+                          <div className="goal-progress">
+                            <div className="progress-header">
+                              <span>Progress</span>
+                              <span>{progress}%</span>
+                            </div>
+
+                            <div className="progress-bar">
+                              <div
+                                className="progress-fill"
+                                style={{ width: `${progress}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <CompleteGoal goalId={goal.id} />
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -282,7 +390,7 @@ export default function ProjectBoard() {
                 <h2>Productivity Tracker</h2>
                 <ul>
                   <li>Goals created: {goals.length}</li>
-                  <li>Goals completed: 0</li>
+                  <li>Goals completed: {completedGoals.length}</li>
                   <li>Avg goal duration: —</li>
                 </ul>
               </div>
@@ -303,29 +411,16 @@ export default function ProjectBoard() {
       {/* LOGOUT MODAL */}
       {showLogoutConfirm && (
         <div className="modal-backdrop">
-          <div
-            style={{
-              background: "white",
-              padding: "28px",
-              borderRadius: "16px",
-              width: "320px",
-              textAlign: "center",
-            }}
-          >
+          <div className="modal">
             <h3>Confirm Logout</h3>
             <p>You will be logged out in {countdown}s</p>
 
-            <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
-              <button
-                onClick={() => setShowLogoutConfirm(false)}
-                style={{ flex: 1 }}
-              >
+            <div className="modal-actions">
+              <button onClick={() => setShowLogoutConfirm(false)}>
                 Cancel
               </button>
 
-              <button onClick={handleLogout} style={{ flex: 1 }}>
-                Log Out Now
-              </button>
+              <button onClick={handleLogout}>Log Out Now</button>
             </div>
           </div>
         </div>
